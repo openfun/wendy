@@ -1,0 +1,85 @@
+name: Notebook service CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-git: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v3
+        with:
+          # Checkout on HEAD commit of the current pull request HEAD.
+          # As this job is triggered on pull request event, the checkout is by
+          # default on the merge commit.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # By default, `fetch-depth` is set to 1, meaning it would only
+          # consider the last commit. Set to 0 will fetch the entire history
+          # of the branch commits.
+          fetch-depth: 0
+
+      - name: Enforce absence of print statements in code
+        run: |
+          ! git diff origin/main..HEAD -- . ':(exclude).github' | grep "print("
+
+      - name: Enforce absence of FIXME statements in code
+        run: |
+          ! git diff origin/main..HEAD -- . ':(exclude).github' | grep "FIXME"
+  
+      - name: Check absence of fixup commits
+        run: |
+          ! git log --pretty=format:%s | grep 'fixup!'
+
+      - name: Install gitlint
+        run: |
+          pip install --user gitlint requests
+
+      - name: Lint commit messages added to main
+        run: |
+          ~/.local/bin/gitlint --commits origin/main..HEAD
+  
+
+  build-docker-notebook:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+  
+        - name: Build wendy notebook image
+          run: make build
+  
+        - name: Check built image availability
+          run: docker images "wendy-notebook:latest"
+
+        - name: Export Docker image
+          run: >
+            mkdir artifacts &&
+            docker save wendy-notebook:latest > artifacts/wendy-notebook.tar
+  
+        - name: Save Docker image artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: docker-wendy-notebook
+            path: artifacts
+            retention-days: 1
+            compression-level: 0
+
+  lint:
+    needs: build-docker-notebook
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Retrieve saved Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-wendy-notebook
+          path: artifacts
+
+      - name: Load Docker image
+        run: docker load -i artifacts/wendy-notebook.tar
+
+      - name: Lint notebook with nbqa
+        run: make lint

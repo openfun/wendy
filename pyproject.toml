@@ -1,0 +1,29 @@
+[project]
+name = "wendy"
+description = "An AI Poc for course recommendation"
+readme = "README.md"
+authors = [
+  { name="Open FUN (France Universite Numerique)", email="fun.dev@fun-mooc.fr" },
+]
+dependencies = [
+  "pandas==1.5.3",
+  "scikit-learn==1.2.1",
+  "spacy==3.5.0",
+  "seaborn==0.12.2",
+]
+version = "0.1.0"
+
+[project.optional-dependencies]
+dev = [
+  "nbqa[toolchain]==1.7.1",
+  "jupytext==1.14.5"
+]
+
+[tool.ruff]
+exclude = ["/**/*.ipynb"]
+
+[tool.black]
+line-length = 96
+
+[tool.jupytext]
+formats = "ipynb,md"

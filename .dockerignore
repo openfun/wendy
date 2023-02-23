@@ -1,0 +1,30 @@
+# Jupyter
+data/
+__pycache__
+.ipynb_checkpoints
+
+# System-specific files
+.DS_Store
+**/.DS_Store
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.*
+
+# Build
+bin/
+Makefile
+
+# Development/test cache & configurations
+gitlint
+.cache
+.coverage
+.env
+.env.dist
+.git
+.github
+.gitignore
+.pylint.d
+.pylintrc
+.pytest_cache

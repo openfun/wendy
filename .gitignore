@@ -1,0 +1,5 @@
+# Checkpoints
+**/.ipynb_checkpoints/
+
+# Jupytext
+*.ipynb
