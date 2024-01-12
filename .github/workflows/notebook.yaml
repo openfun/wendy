@@ -1,0 +1,24 @@
+name: Notebook service CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-git: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+
+      - name: enforce absence of print statements in code
+        run: ! git diff origin/main..HEAD -- . ':(exclude).circleci' | grep "print("
+      
+      - name: Check absence of fixup commits
+        run: ! git log --pretty=format:%s | grep 'fixup!'
+
+  build:
+    runs-on: 
+  lint: 
+    runs-on: 

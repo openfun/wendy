@@ -1,5 +1,5 @@
 # -- Base image --
-FROM jupyter/base-notebook as base
+FROM jupyter/minimal-notebook:latest as base
 
 # Upgrade pip to its latest release to speed up dependencies installation
 RUN pip install --upgrade pip
@@ -10,15 +10,10 @@ WORKDIR /home/jovyan/work
 
 RUN pip install -e .[dependencies]
 
+# -- Development image --
+FROM base as development
+
+RUN pip install -e .[dev]
+
 # Un-privileged user running the application
 USER ${DOCKER_USER:-1000}
-
-# RUN pip install \
-#     jupytext \
-#     pandas \
-#     scikit-learn \
-#     nltk \
-#     spacy \
-#     seaborn
-
-#RUN python -m spacy download fr_core_news_sm

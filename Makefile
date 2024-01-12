@@ -5,6 +5,7 @@ DOCKER_GID           = $(shell id -g)
 DOCKER_USER          = $(DOCKER_UID):$(DOCKER_GID)
 COMPOSE              = DOCKER_USER=$(DOCKER_USER) docker compose
 COMPOSE_RUN          = $(COMPOSE) run --rm
+COMPOSE_RUN_NOTEBOOK = $(COMPOSE_RUN) notebook
 
 # ==============================================================================
 # RULES
@@ -15,7 +16,6 @@ default: help
 bootstrap: ## bootstrap project
 bootstrap: \
 	build \
-	pairing \
 	run
 .PHONY: bootstrap
 
@@ -27,25 +27,21 @@ down: ## stop and remove backend containers
 	@$(COMPOSE) down
 .PHONY: down
 
-
-lint-black: ## lint back-end python sources with black
+lint: ## lint notebook with nbqa
+	@echo 'lint:ruff started…'
+	# @$(COMPOSE_RUN_NOTEBOOK) nbqa ruff notebooks
 	@echo 'lint:black started…'
-	bin/jupytext --sync --pipe black notebooks/**
-.PHONY: lint-black
+	@$(COMPOSE_RUN_NOTEBOOK) nbqa black notebooks
+.PHONY: lint
+
+lint-fix: ## lint and fix notebook errors with nbqa
+	@echo 'lint:ruff started…'
+	@$(COMPOSE_RUN_NOTEBOOK) nbqa ruff --fix notebooks
+.PHONY: lint-fix
 
 logs: ## display app logs (follow mode)
 	@$(COMPOSE) logs -f notebook
 .PHONY: logs
-
-pairing: ## activatsynchronize notebooks
-	bin/jupytext --sync notebooks/**
-.PHONY: pairing
-
-pre-commit: ## install pre-commit hooks
-	$(COMPOSE_RUN) pre-commit bash -c "pip install pre-commit" \
-	bin/pre-commit install
-.PHONY: pre-commit
-
 
 run: ## run notebook server
 run:
