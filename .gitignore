@@ -1,0 +1,11 @@
+# Environment
+.env
+
+# Checkpoints
+**/.ipynb_checkpoints/
+
+# Jupytext
+*.ipynb
+
+# Data
+source

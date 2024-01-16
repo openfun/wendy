@@ -1,0 +1,126 @@
+# version: 2.1
+# jobs:
+#   # Git jobs
+#   # Check that the git history is clean and complies with our expectations
+#   lint-git:
+#     docker:
+#       - image: cimg/python:3.11
+#         auth:
+#           username: $DOCKER_HUB_USER
+#           password: $DOCKER_HUB_PASSWORD
+#     working_directory: ~/fun
+#     steps:
+#       - checkout
+#       # Make sure the changes don't add a "print" statement to the code base.
+#       # We should exclude the ".circleci" folder from the search as the very command that checks
+#       # the absence of "print" is including a "print(" itself.
+#       - run:
+#           name: enforce absence of print statements in code
+#           command: |
+#             ! git diff origin/main..HEAD -- . ':(exclude).circleci' | grep "print("
+#       - run:
+#           name: Check absence of fixup commits
+#           command: |
+#             ! git log --pretty=format:%s | grep 'fixup!'
+#       - run:
+#           name: Install gitlint
+#           command: |
+#             pip install --user gitlint requests
+#       - run:
+#           name: lint commit messages added to main
+#           command: |
+#             ~/.local/bin/gitlint --commits origin/main..HEAD
+
+#   # Build custom Jupyter images used for development
+#   build-docker:
+#     docker:
+#       - image: cimg/base:current
+#         auth:
+#           username: $DOCKER_HUB_USER
+#           password: $DOCKER_HUB_PASSWORD
+#     working_directory: ~/fun
+#     steps:
+#       - checkout
+#       - setup_remote_docker:
+#           docker_layer_caching: true
+#       - run:
+#           name: Build development image
+#           command: make build
+#       - run:
+#           name: Check built image availability
+#           command: docker images "wendy:*"
+
+#   # Build custom Jupyter images used for development
+#   build:
+#     docker:
+#       - image: cimg/python:3.11
+#         auth:
+#           username: $DOCKER_HUB_USER
+#           password: $DOCKER_HUB_PASSWORD
+#     working_directory: ~/fun
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           keys:
+#             - v1-dependencies-python:3.11-{{ .Revision }}
+#       - run:
+#           name: Install development dependencies
+#           command: pip install --user .[dev]
+#       - save_cache:
+#           paths:
+#             - ~/.local
+#           key: v1-dependencies-python:3.11-{{ .Revision }}
+
+#   # Lint Python code in Jupyter notebooks
+#   lint:
+#     docker:
+#       - image: cimg/python:3.11
+#         auth:
+#           username: $DOCKER_HUB_USER
+#           password: $DOCKER_HUB_PASSWORD
+#     working_directory: ~/fun
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           keys:
+#             - v1-dependencies-python:3.11-{{ .Revision }}
+#       - run:
+#           name: Lint code with black
+#           command: ~/.local/bin/black notebooks/**
+
+# workflows:
+#   version: 2
+
+#   wendy:
+#     jobs:
+#       # Git job
+#       #
+#       # Check validity of git history
+#       - lint-git:
+#           filters:
+#             tags:
+#               only: /.*/
+      
+#       # Build tooling
+#       #
+#       # Build custom Jupyter base image for development
+#       - build-docker:
+#           filters:
+#             tags:
+#               only: /.*/
+
+#       - build:
+#           filters:
+#             tags:
+#               only: /.*/
+
+#       # Quality check
+#       #
+#       # Lint notebook codes
+#       - lint:
+#           requires:
+#             - build
+#           filters:
+#             tags:
+#               only: /.*/
+ 
