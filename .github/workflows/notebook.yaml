@@ -10,10 +10,10 @@ jobs:
   lint-git: 
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: enforce absence of print statements in code
-        run: git diff main..HEAD -- . ':(exclude).github' | grep "print("
+        run: git diff origin/main..HEAD -- . ':(exclude).github' | grep "print("
       
       - name: Check absence of fixup commits
         run: git log --pretty=format:%s | grep 'fixup!'
